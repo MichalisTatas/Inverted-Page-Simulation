@@ -1,7 +1,8 @@
 #ifndef INVERTEDPAGETABLE_H
 #define INVERTEDPAGETABLE_H
 
-#include "./Address.h"
+#include <stdbool.h>
+#include <stdlib.h>
 
 typedef IptAddress* IptAddressPtr;
 
@@ -18,4 +19,6 @@ typedef struct invertedPageTable {
     IptAddressPtr* array; 
 } Ipt;
 
+
+void fixAddress(IptAddressPtr address, char* line);
 #endif
