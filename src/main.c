@@ -1,34 +1,28 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "../include/Simulator.h"
-#include "../include/defines.h"
 
-int main(int argc, char* argv[]) {
-
-    if(argc < 7) {
-        printf("Correct usage: \n");
-        return -1;
+int main(int argc, char* argv[])
+{
+    if (argc < 7) {
+        printf("need more information");
     }
-
-    char *algorithm;
-    int quantum = 0;
-    int frames = 0;
-    int maxReferences = -1;
-
-    for(int i=0; i < argc; i++) {
-        if(!strcmp(argv[i], "-f")) {
+    char* algorithm;
+    int quantity, maxReferences, frames;
+    for (int i=0; i < argc; i++) {
+        if (strcmp(argv[i], "-f") == 0) {
             frames = atoi(argv[++i]);
         }
-        else if(!strcmp(argv[i], "-q")) {
-            quantum = atoi(argv[++i]);
+        else if (strcmp(argv[i], "-q") == 0) {
+            quantity = atoi(argv[++i]);
         }
-        else if(!strcmp(argv[i], "-m")) {
+        else if (strcmp(argv[i], "-m") == 0) {
             maxReferences = atoi(argv[++i]);
         }
-        else if(!strcmp(argv[i], "-a")) {
-            i++;    // argv[++i] doesn't seem to work
-            if((algorithm = malloc(sizeof(argv[i]))) == NULL) {
+        else if (strcmp(argv[i], "-a") == 0) {
+            i++;    // malloc(sizeof(argv[++i])) doesn't seem to work
+            if ((algorithm = malloc(sizeof(argv[i]))) == NULL) {
                 perror("malloc failed");
                 return -1;
             }
@@ -36,9 +30,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    Simulator_run(algorithm, frames, quantum, maxReferences);
+    simulatorRun(algorithm, frames, quantity, maxReferences);
 
     free(algorithm);
-
     return 0;
 }

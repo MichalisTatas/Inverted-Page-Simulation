@@ -3,11 +3,19 @@
 
 #include "./Address.h"
 
-typedef struct InvertedPageTable {
-    size_t size;
-    AddressPtr* table;
-} InvertedPageTable;
+typedef IptAddress* IptAddressPtr;
 
-typedef InvertedPageTable* InvertedPageTablePtr;
+typedef struct IptAddress {
+    int pid;
+    int page;
+    bool isDirty;
+} IptAddress;
+
+typedef Ipt* IptPtr;
+
+typedef struct invertedPageTable {
+    size_t size;
+    IptAddressPtr* array; 
+} Ipt;
 
 #endif
