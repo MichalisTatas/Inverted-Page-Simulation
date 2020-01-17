@@ -28,12 +28,12 @@ int main(int argc, char* argv[])
             }
             strcpy(algorithm, argv[i]);
             if(!strcmp(algorithm, "WS") || !strcmp(algorithm, "ws")) {
-                for(int j=0; i < argc; i++) {
+                for(int j=0; j < argc; j++) {
                     if(!strcmp(argv[j], "-ws")) {
                         maxWorkingSet = atoi(argv[++j]);
                     }
                 }
-                if(maxWorkingSet = -1) {
+                if(maxWorkingSet == -1) {
                     printf("please define a ws window\n");
                     return -1;
                 }
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    simulatorRun(algorithm, frames, quantity, maxReferences);
+    simulatorRun(algorithm, frames, quantity, maxReferences, maxWorkingSet);
 
     free(algorithm);
     return 0;

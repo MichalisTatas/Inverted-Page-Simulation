@@ -1,84 +1,104 @@
 #include "../include/LRU.h"
 #include "../include/queue.h"
 
-IptAddressPtr addressInIpt(IptPtr ipt, IptAddressPtr address)
+int LruHandler(IptPtr ipt, char* algorithm, int frames, int quantity, int maxReferences, statistics* stats)
 {
-    for (int i=0; i<ipt->maxSize; i++) {
-        if (ipt->array[i] != NULL) {
-           if (ipt->array[i]->isDirty == address->isDirty && ipt->array[i]->page == address->page && ipt->array[i]->pid == address->pid)
-                return address;
+    int currentReferences = 0 , currentQuantity = 0;
+    bool switchFiles  = false;
+    FILE* file1 = fopen("./Assets/bzip.trace", "r");
+    FILE* file2 = fopen("./Assets/gcc.trace", "r");
+
+    if (file1 == NULL || file2 == NULL) {
+        perror("failed to open file");
+        return -1;
+    }
+
+    char* line = NULL;
+    size_t len = 0;
+    IptAddressPtr address;
+    PQ Q;
+    InitializePQ(&Q);
+    while (currentReferences != 2*maxReferences) {
+
+        if ((address = malloc(sizeof(IptAddress))) == NULL) {
+            perror("malloc failed to allocate space");
+            return -1;
         }
-    }
-    return NULL;
-}
 
-void insertAtFreeSpace(IptPtr ipt,IptAddressPtr address)
-{
-    for (int i=0; i<ipt->maxSize; i++) {
-        if (ipt->array[i] == NULL) {
-            ipt->array[i] = address;
-            return;
+        if (switchFiles) {
+            if (getline(&line, &len, file2) == -1) {
+                printf("EOF\n");
+                return -1;
+            }
+            if (++currentQuantity == quantity) {
+                currentQuantity = 0;
+                switchFiles = false;
+            }
+            address->pid = 2;
         }
+        else {
+            if (getline(&line, &len, file1) == -1) {
+                printf("EOF\n");
+                return -1;
+            }
+            if (++currentQuantity == quantity) {
+                currentQuantity = 0;
+                switchFiles = true;
+            }
+            address->pid = 1;
+        }
+        fillAddress(address, line);
+
+        stats->pageRequest++;
+        if (address->isDirty)
+            stats->writes++;
+        else
+            stats->reads++;
+
+        runLRU(ipt, address, &Q, stats);
+        currentReferences++;
+        
+        for (int i=0; i<ipt->currSize; i++) {
+            if (ipt->array[i] != NULL)
+                printf("IPT address: %8d  pid : %d , operation : %d\n", ipt->array[i]->page, ipt->array[i]->pid, ipt->array[i]->isDirty);
+        }
+        printf("\n\n");
+        
     }
+        free(line);
+        // free(address);
+
+    destroyPQ(&Q);
+    printf("Statistics : \n\n \t Reads : %d \n\n \t Writes : %d \n\n \t PageFaults : %d \n\n \t pageRequests : %d \n\n", stats->reads, stats->writes, stats->pageFaults, stats->pageRequest);
+
+    fclose(file1);
+    fclose(file2);
+    return 0;
 }
 
-void removeIpt(IptPtr ipt, IptAddressPtr address)
+int runLRU(IptPtr ipt, IptAddressPtr address, PQPtr Q, statistics* stats)
 {
-    for (int i=0; i<ipt->maxSize; i++) {
-       if (ipt->array[i]->isDirty == address->isDirty && ipt->array[i]->page == address->page && ipt->array[i]->pid == address->pid) {
-            // IptAddressPtr m = ipt->array[i];   
-            free(ipt->array[i]); 
-            ipt->array[i] = NULL;
-            // free(m);
-            ipt->currSize--;
-       }
-    }
-}
-
-//q uses copies of the structs
-
-int runLRU(IptPtr ipt, IptAddressPtr address, PQPtr Q)
-{
-    
-    // for (int i=0; i<4; i++) {
-    //     PushPQ(&Q, i);
-    // }
-
-    // givePriority(&Q, 2);
-    // for (int i=0; i<4; i++) {
-    //     printf("data : %d \n",PopPQ(&Q));
-    // }
-    // printf("\n");
-
-    // PushPQ(&Q, *address);
-    // printf(" AAAA : %d %d %d\n", address->page, address->isDirty, address->pid);
-    // IptAddress m = PopPQ(&Q);
-    // printf(" BBBB : %d %d %d\n", m.page, m.isDirty, m.pid);
-    // printf(" AAAA : %d %d %d\n\n\n", address->page, address->isDirty, address->pid);
-    
     if (addressInIpt(ipt, address) != NULL) {       // if address already in the ipt
-        // printf("address with page ktl is already in %d %d %d \n",(*address)->page, (*address)->pid, (*address)->isDirty);
         givePriority(Q, *address);
+        if (address->isDirty)
+            setWrite(ipt, address);
         free(address);
-        // ipt->currSize++;
     }
     else {
+        stats->pageFaults++;
         if (ipt->currSize < ipt->maxSize) {        // if address not in ipt and ipt has free space
             insertAtFreeSpace(ipt, address);
             PushPQ(Q, *address);
             ipt->currSize++;
         }
         else {                                     // if address not in ipt and ipt has no free space
-            // printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA\n");
             IptAddressPtr n = PopPQ(Q);
             removeIpt(ipt, n);
             free(n);
-            // printf("node to go : %d \n", n->page);
             insertAtFreeSpace(ipt, address);
             PushPQ(Q, *address);
             ipt->currSize++;
         }
     }
-    // free(address);
     return 0;
 }

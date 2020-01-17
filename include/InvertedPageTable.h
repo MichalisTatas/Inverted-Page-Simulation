@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 typedef struct IptAddress {
     int pid;
     int page;
@@ -21,7 +22,17 @@ typedef struct invertedPageTable {
 } Ipt;
 typedef Ipt* IptPtr;
 
+typedef struct statistics {
+    int reads;
+    int writes;
+    int pageFaults;
+    int pageRequest;
+} statistics;
 
 void fillAddress(IptAddressPtr address, char* line);
-// insertFreeIptSpace();
+IptAddressPtr addressInIpt(IptPtr ipt, IptAddressPtr address);
+void insertAtFreeSpace(IptPtr ipt,IptAddressPtr address);
+void removeIpt(IptPtr ipt, IptAddressPtr address);
+void setWrite(IptPtr ipt, IptAddressPtr address);
+
 #endif

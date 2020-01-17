@@ -24,10 +24,10 @@ $(BDIR)/$(EXECUTABLE): $(OBJ)
 .PHONY: clean run
 
 run:
-	./$(BDIR)/$(EXECUTABLE) -a WS -f 10 -q 10 -m 100
+	./$(BDIR)/$(EXECUTABLE) -a lru -f 10 -q 10 -m 10000
 
 valgrind:
-	valgrind --leak-check=full ./$(BDIR)/$(EXECUTABLE) -a WS -f 10 -q 10 -m 100
+	valgrind --leak-check=full ./$(BDIR)/$(EXECUTABLE) -a lru -f 10 -q 10 -m 10000
 
 clean:
 	rm -f $(ODIR)/*.o

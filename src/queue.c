@@ -2,7 +2,6 @@
 
 void InitializePQ(PQPtr Q)
 {
-    // Q = malloc(sizeof(PQ));
     Q->currSize = 0;
     Q->head = NULL;
     Q->tail = NULL;
@@ -22,11 +21,8 @@ int PushPQ(PQPtr Q, IptAddress data)
         return -1;
     }
     
-    //mporei kai ta data na 8eloun mPtralloc an einai void* px 8a dw
 
     tempNode->data = data;
-    // tempNode->data.page++;
-    // printf(" aaa : %d \n",tempNode->data.page);
     tempNode->next = NULL;
 
     if (Q->currSize) {
@@ -61,7 +57,6 @@ IptAddressPtr PopPQ(PQPtr Q)
         }
     }
     Q->currSize--;
-    //an kanw malloc ta data 8a xreiastei ka ifree edw
 
     free(tempNode);
 
@@ -100,4 +95,11 @@ void givePriority(PQPtr Q, IptAddress data)
 }
 
 
-//free queue
+void destroyPQ(PQPtr Q)
+{
+    IptAddressPtr temp;
+    for (int i=0; i<Q->currSize + 10; i++) {
+        temp = PopPQ(Q);
+        free(temp);
+    }
+}
