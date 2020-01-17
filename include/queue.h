@@ -20,7 +20,7 @@ typedef PQ* PQPtr;
 void InitializePQ(PQPtr Q);
 int isPQEmpty(PQPtr Q);
 int PushPQ(PQPtr Q, IptAddress data);
-void destroyPQ(PQPtr Q);
+void destroyPQ(PQPtr Q, statistics* stats);
 IptAddressPtr PopPQ();
 void givePriority(PQPtr Q, IptAddress data);
 int myCompare(IptAddress data1, IptAddress data2);

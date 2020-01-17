@@ -50,9 +50,7 @@ int LruHandler(IptPtr ipt, char* algorithm, int frames, int quantity, int maxRef
         fillAddress(address, line);
 
         stats->pageRequest++;
-        if (address->isDirty)
-            stats->writes++;
-        else
+        if (!address->isDirty)
             stats->reads++;
 
         runLRU(ipt, address, &Q, stats);
@@ -63,12 +61,11 @@ int LruHandler(IptPtr ipt, char* algorithm, int frames, int quantity, int maxRef
                 printf("IPT address: %8d  pid : %d , operation : %d\n", ipt->array[i]->page, ipt->array[i]->pid, ipt->array[i]->isDirty);
         }
         printf("\n\n");
-        
-    }
-        free(line);
-        // free(address);
 
-    destroyPQ(&Q);
+    }
+    free(line);
+    
+    destroyPQ(&Q, stats);
     printf("Statistics : \n\n \t Reads : %d \n\n \t Writes : %d \n\n \t PageFaults : %d \n\n \t pageRequests : %d \n\n", stats->reads, stats->writes, stats->pageFaults, stats->pageRequest);
 
     fclose(file1);
@@ -93,6 +90,8 @@ int runLRU(IptPtr ipt, IptAddressPtr address, PQPtr Q, statistics* stats)
         }
         else {                                     // if address not in ipt and ipt has no free space
             IptAddressPtr n = PopPQ(Q);
+            if (n->isDirty)
+                stats->writes++;
             removeIpt(ipt, n);
             free(n);
             insertAtFreeSpace(ipt, address);

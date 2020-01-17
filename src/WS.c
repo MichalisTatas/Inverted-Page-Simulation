@@ -65,14 +65,14 @@ int WsHandler(IptPtr ipt, char* algorithm, int frames, int quantity, int maxRefe
                 printf("IPT address: %8d  pid : %d , operation : %d\n", ipt->array[i]->page, ipt->array[i]->pid, ipt->array[i]->isDirty);
         }
         printf("\n\n");
-
     }
-    free(line);
 
-    destroyPQ(&Q1);
-    destroyPQ(&Q2);
+    free(line);
+    
     printf("Statistics : \n\n \t Reads : %d \n\n \t Writes : %d \n\n \t PageFaults : %d \n\n \t pageRequests : %d \n\n", stats->reads, stats->writes, stats->pageFaults, stats->pageRequest);
     
+    destroyPQ(&Q1, stats);
+    destroyPQ(&Q2, stats);
     fclose(file1);
     fclose(file2);
     return 0;
@@ -105,7 +105,7 @@ int runWS(IptPtr ipt, IptAddressPtr address, PQPtr Q1, PQPtr Q2, int maxWorkingS
     }
     else {                                       // if address not in inverted page table   
         stats->pageFaults++;
-        if (ipt->currSize <= ipt->maxSize) {         //if ipt has free space
+        if (ipt->currSize < ipt->maxSize) {         //if ipt has free space
             insertAtFreeSpace(ipt, address);
             ipt->currSize++;
             if (Q->currSize <= maxWorkingSet)

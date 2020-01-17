@@ -40,6 +40,7 @@ int simulatorRun(char* algorithm, int frames, int quantity, int maxReferences, i
     for (int i=0; i<ipt->maxSize; i++)
         if(ipt->array[i] != NULL)
             free(ipt->array[i]);               //do i need to check if null?
+    
     free(stats);
     free(ipt->array);
     free(ipt);

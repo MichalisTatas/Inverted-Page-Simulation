@@ -95,11 +95,13 @@ void givePriority(PQPtr Q, IptAddress data)
 }
 
 
-void destroyPQ(PQPtr Q)
+void destroyPQ(PQPtr Q, statistics* stats)
 {
     IptAddressPtr temp;
     for (int i=0; i<Q->currSize + 10; i++) {
         temp = PopPQ(Q);
+        if (temp->isDirty)
+            stats->writes++;
         free(temp);
     }
 }
