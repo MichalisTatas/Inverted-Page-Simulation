@@ -11,11 +11,11 @@
 int simulatorRun(char* algorithm, int frames, int quantity, int maxReferences)
 {
     int currentReferences = 0 , currentQuantity = 0;
-    bool switchFiles;
+    bool switchFiles  = false;
     int (*replacementAlgo)();
     IptPtr ipt = NULL;
 
-    if ((ipt = malloc(sizeof(IptPtr))) == NULL) {
+    if ((ipt = malloc(sizeof(Ipt))) == NULL) {
         perror("malloc failed to allocate space");
         return -1;
     }
@@ -47,21 +47,23 @@ int simulatorRun(char* algorithm, int frames, int quantity, int maxReferences)
         return -1;
     }
 
-    char* line;
-    size_t len;
+    char* line = NULL;
+    size_t len = 0;
     IptAddressPtr address;
     PQ Q;
     InitializePQ(&Q);
     while (currentReferences != 2*maxReferences) {
 
-        if ((address = malloc(sizeof(IptAddressPtr))) == NULL) {
+        if ((address = malloc(sizeof(IptAddress))) == NULL) {
             perror("malloc failed to allocate space");
             return -1;
         }
 
         if (switchFiles) {
-            if (getline(&line, &len, file2) == -1)
+            if (getline(&line, &len, file2) == -1) {
+                printf("EOF\n");
                 return -1;
+            }
             if (++currentQuantity == quantity) {
                 currentQuantity = 0;
                 switchFiles = false;
@@ -69,8 +71,10 @@ int simulatorRun(char* algorithm, int frames, int quantity, int maxReferences)
             address->pid = 2;
         }
         else {
-            if (getline(&line, &len, file1) == -1)
+            if (getline(&line, &len, file1) == -1) {
+                printf("EOF\n");
                 return -1;
+            }
             if (++currentQuantity == quantity) {
                 currentQuantity = 0;
                 switchFiles = true;
@@ -79,30 +83,36 @@ int simulatorRun(char* algorithm, int frames, int quantity, int maxReferences)
         }
         fillAddress(address, line);
 
-        replacementAlgo(ipt, &address, &Q);
+        // printf("tatata %d %d %d\n", address->page, address->pid, address->isDirty);
+        replacementAlgo(ipt, address, &Q);
         currentReferences++;
-    }
-    // free(address); //xreoazetai?
+        // printf(" IPT CURR SIZE : %d \n", ipt->currSize);
+        // printf(" IPT MAX SIZE : %ld \n", ipt->maxSize);
+        for (int i=0; i<ipt->currSize; i++) {
+            if (ipt->array[i] != NULL)
+                printf("IPT  : %d \n", ipt->array[i]->page);
+        }
 
-    for (int i=0; i<ipt->maxSize; i++) {
-        if (ipt->array[i] != NULL)
-            printf("FF : %d \n", ipt->array[i]->page);
+        printf("\n\n");
     }
+        free(line);
+        // free(address);
 
-    IptAddressPtr temp = malloc(sizeof(IptAddress));
-    for (int i=0; i<Q.currSize; i++) {
-        printf("gamwe to xristo \n");
+    IptAddressPtr temp;          //print q also needed for memorry of q
+    for (int i=0; i<Q.currSize + 9; i++) {
         temp = PopPQ(&Q);
-        printf("GG   : %d \n", temp->page);
+        // printf("QUEUE   : %d \n", temp->page);
+        free(temp);
     }
 
-    free(line);
+
 
     fclose(file1);
     fclose(file2);
 
     for (int i=0; i<ipt->maxSize; i++)
-        free(ipt->array[i]);               //do i need to check if null?
+        if(ipt->array[i] != NULL)
+            free(ipt->array[i]);               //do i need to check if null?
 
     free(ipt->array);
     free(ipt);

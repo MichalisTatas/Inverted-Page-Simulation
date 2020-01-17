@@ -22,7 +22,7 @@ int PushPQ(PQPtr Q, IptAddress data)
         return -1;
     }
     
-    //mporei kai ta data na 8eloun malloc an einai void* px 8a dw
+    //mporei kai ta data na 8eloun mPtralloc an einai void* px 8a dw
 
     tempNode->data = data;
     // tempNode->data.page++;
@@ -46,20 +46,25 @@ IptAddressPtr PopPQ(PQPtr Q)
 {   
     nodePtr tempNode = Q->head;
     IptAddressPtr data = malloc(sizeof(IptAddress));
-    data = &tempNode->data; //met at okanw free ara seg
-    printf(" dd %d \n\n", Q->head->data.page);
-    if (Q->currSize != 0 && Q->currSize != 1)    {
-        printf("wtf \n");
-        Q->head = Q->head->next;
-}
-    else {
-        Q->head = NULL;
-        Q->tail =NULL;
+
+    data->isDirty = tempNode->data.isDirty;
+    data->page = tempNode->data.page;
+    data->pid = tempNode->data.pid;
+
+    if (Q->currSize != 0) {
+        if(Q->currSize == 1) {
+            Q->head = NULL;
+            Q->tail =NULL;
+        }
+        else {
+            Q->head = Q->head->next;
+        }
     }
-    printf("BIKE\n");
     Q->currSize--;
     //an kanw malloc ta data 8a xreiastei ka ifree edw
+
     free(tempNode);
+
     return data;
 }
 
@@ -74,21 +79,23 @@ int myCompare(IptAddress data1, IptAddress data2)
 
 void givePriority(PQPtr Q, IptAddress data)
 {
-    printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n");
+    
     nodePtr fastPtr, slowPtr;
     fastPtr = Q->head;
     if (fastPtr != NULL) {
-        while (myCompare(fastPtr->data, data)) {
+        while (myCompare(fastPtr->data, data) && fastPtr->next != NULL) {
             slowPtr = fastPtr;
             fastPtr = fastPtr->next;
         }
         if (fastPtr == Q->head) 
             Q->head = Q->head->next;
+        else if (fastPtr->next == NULL)  //it is already in tail
+            return;
         else
             slowPtr->next = fastPtr->next;
         Q->tail->next = fastPtr;
         Q->tail = fastPtr;
-        fastPtr->next = NULL;
+        fastPtr->next = NULL;   
     }
 }
 

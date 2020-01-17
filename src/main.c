@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
         printf("need more information");
     }
     char* algorithm;
-    int quantity, maxReferences, frames;
+    int quantity = 0 , maxReferences = 1000000, frames = 0, maxWorkingSet = -1;
     for (int i=0; i < argc; i++) {
         if (strcmp(argv[i], "-f") == 0) {
             frames = atoi(argv[++i]);
@@ -27,6 +27,17 @@ int main(int argc, char* argv[])
                 return -1;
             }
             strcpy(algorithm, argv[i]);
+            if(!strcmp(algorithm, "WS") || !strcmp(algorithm, "ws")) {
+                for(int j=0; i < argc; i++) {
+                    if(!strcmp(argv[j], "-ws")) {
+                        maxWorkingSet = atoi(argv[++j]);
+                    }
+                }
+                if(maxWorkingSet = -1) {
+                    printf("please define a ws window\n");
+                    return -1;
+                }
+            }
         }
     }
 
