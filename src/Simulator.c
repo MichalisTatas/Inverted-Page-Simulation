@@ -1,31 +1,33 @@
-#include "../include/Simulator.h"
-#include "../include/InvertedPageTable.h"
-#include "../include/WS.h"
-#include "../include/LRU.h"
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 
+#include "../include/Simulator.h"
+#include "../include/InvertedPageTable.h"
+#include "../include/queue.h"
+#include "../include/WS.h"
+#include "../include/LRU.h"
+
 int simulatorRun(char* algorithm, int frames, int quantity, int maxReferences)
 {
-    int currentReferences = 0 , currentQuantity = 0;    //giati -1?
+    int currentReferences = 0 , currentQuantity = 0;
     bool switchFiles;
     int (*replacementAlgo)();
-    IptPtr ipt;
+    IptPtr ipt = NULL;
 
-    if ((ipt = malloc(sizeof(Ipt))) == NULL) {
+    if ((ipt = malloc(sizeof(IptPtr))) == NULL) {
         perror("malloc failed to allocate space");
         return -1;
     }
-    ipt->size =- frames;
+    ipt->currSize = 0;
+    ipt->maxSize = frames;
 
     if ((ipt->array= malloc(frames*sizeof(IptAddressPtr))) == NULL) {
         perror("malloc failed to allocate space");
         return -1;
     }
 
-    for (int i=0; i<ipt->size; i++)
+    for (int i = 0; i < ipt->maxSize; i++)
         ipt->array[i] = NULL;
 
     FILE* file1 = fopen("./Assets/bzip.trace", "r");
@@ -48,6 +50,8 @@ int simulatorRun(char* algorithm, int frames, int quantity, int maxReferences)
     char* line;
     size_t len;
     IptAddressPtr address;
+    PQ Q;
+    InitializePQ(&Q);
     while (currentReferences != 2*maxReferences) {
 
         if ((address = malloc(sizeof(IptAddressPtr))) == NULL) {
@@ -73,20 +77,34 @@ int simulatorRun(char* algorithm, int frames, int quantity, int maxReferences)
             }
             address->pid = 1;
         }
-        //address set info
+        fillAddress(address, line);
 
-        replacementAlgo(ipt, address);
+        replacementAlgo(ipt, &address, &Q);
+        currentReferences++;
     }
+    // free(address); //xreoazetai?
+
+    for (int i=0; i<ipt->maxSize; i++) {
+        if (ipt->array[i] != NULL)
+            printf("FF : %d \n", ipt->array[i]->page);
+    }
+
+    IptAddressPtr temp = malloc(sizeof(IptAddress));
+    for (int i=0; i<Q.currSize; i++) {
+        printf("gamwe to xristo \n");
+        temp = PopPQ(&Q);
+        printf("GG   : %d \n", temp->page);
+    }
+
     free(line);
 
     fclose(file1);
     fclose(file2);
 
-    for (int i=0; i<ipt->size; i++)
+    for (int i=0; i<ipt->maxSize; i++)
         free(ipt->array[i]);               //do i need to check if null?
 
     free(ipt->array);
     free(ipt);
     return 0;
 }
-

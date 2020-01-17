@@ -9,10 +9,10 @@ SDIR = src
 
 EXECUTABLE = runner
 
-_DEPS = Address.h InvertedPageTable.h Simulator.h defines.h
+_DEPS = InvertedPageTable.h WS.h LRU.h Simulator.h queue.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o Address.o InvertedPageTable.o Simulator.o
+_OBJ = main.o InvertedPageTable.o WS.o LRU.o Simulator.o queue.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
@@ -27,7 +27,7 @@ run:
 	./$(BDIR)/$(EXECUTABLE) -a LRU -f 100 -q 10 -m 10
 
 valgrind:
-	valgrind ./$(BDIR)/$(EXECUTABLE) -a LRU -f 100 -q 10 -m 10
+	valgrind ./$(BDIR)/$(EXECUTABLE) -a LRU -f 10 -q 10 -m 10
 
 clean:
 	rm -f $(ODIR)/*.o

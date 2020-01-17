@@ -2,7 +2,8 @@
 #define LRU
 
 #include "InvertedPageTable.h"
+#include "queue.h"
 
-int runLRU(IptPtr ipt, IptAddressPtr address);
+int runLRU(IptPtr ipt, IptAddressPtr* address, PQPtr Q);
 
 #endif

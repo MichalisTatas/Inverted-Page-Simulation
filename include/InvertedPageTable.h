@@ -1,24 +1,27 @@
 #ifndef INVERTEDPAGETABLE_H
 #define INVERTEDPAGETABLE_H
 
+#define FRAME_SIZE 4096
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
-
-typedef IptAddress* IptAddressPtr;
+#include <string.h>
 
 typedef struct IptAddress {
     int pid;
     int page;
     bool isDirty;
 } IptAddress;
-
-typedef Ipt* IptPtr;
+typedef IptAddress* IptAddressPtr;
 
 typedef struct invertedPageTable {
-    size_t size;
+    int currSize;
+    size_t maxSize;
     IptAddressPtr* array; 
 } Ipt;
+typedef Ipt* IptPtr;
 
 
-void fixAddress(IptAddressPtr address, char* line);
+void fillAddress(IptAddressPtr address, char* line);
+// insertFreeIptSpace();
 #endif
